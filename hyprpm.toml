@@ -1,0 +1,11 @@
+[repository]
+name = "hyprlane"
+authors = ["Nexitask Company", "dawser", "cpiber"]
+
+[hyprlane]
+description = "A plugin providing a scrolling layout, inspired by PaperWM"
+authors = ["Nexitask Company", "dawser", "cpiber"]
+build = [
+    "make release",
+]
+output = "hyprlane.so"

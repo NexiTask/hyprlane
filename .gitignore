@@ -1,0 +1,9 @@
+Debug/
+Release/
+.build/
+hyprlane.so
+.cache/
+compile_commands.json
+result
+.claude/
+.cursor/

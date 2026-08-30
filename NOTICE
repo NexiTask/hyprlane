@@ -1,0 +1,15 @@
+Hyprlane started from the MIT-licensed hyprscroller plugin.
+
+Original project:
+  https://github.com/dawsers/hyprscroller
+  Author: Dawser (dawser)
+
+This tree was copied from:
+  https://github.com/cpiber/hyprscroller
+  Historical author and intermediate maintainer: Constantin Piber (cpiber)
+
+Those repositories are historical sources only. Hyprlane is currently
+maintained by Nexitask Company and does not track them as remotes.
+
+The original MIT license text, including the 2024 hyprscroller copyright,
+is preserved in LICENSE.
