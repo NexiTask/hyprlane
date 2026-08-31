@@ -1,0 +1,161 @@
+name: Check Hyprland compatibility
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: hyprland-compatibility
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Hyprlane
+        uses: actions/checkout@v5
+
+      - name: Check latest stable Hyprland release
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs');
+
+            const compatibilityPath = '.github/hyprland-compatibility.json';
+            const compatibility = JSON.parse(
+              fs.readFileSync(compatibilityPath, 'utf8')
+            );
+            const supportedTag = compatibility.hyprland_tag;
+            if (typeof supportedTag !== 'string' || supportedTag.length === 0) {
+              core.setFailed(`Missing hyprland_tag in ${compatibilityPath}`);
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const releases = await github.paginate(
+              github.rest.repos.listReleases,
+              {
+                owner: 'hyprwm',
+                repo: 'Hyprland',
+                per_page: 100,
+              }
+            );
+            const releaseTimestamp = (release) =>
+              Date.parse(release.published_at || release.created_at || '') || 0;
+            const latestRelease = releases
+              .filter((release) => !release.draft && !release.prerelease)
+              .sort(
+                (left, right) =>
+                  releaseTimestamp(right) - releaseTimestamp(left)
+              )[0];
+
+            if (!latestRelease || typeof latestRelease.tag_name !== 'string') {
+              core.setFailed('No stable Hyprland release with a tag was found.');
+              return;
+            }
+
+            const latestTag = latestRelease.tag_name;
+            if (latestTag === supportedTag) {
+              core.info(
+                `Hyprland ${latestTag} matches the supported tag; no compatibility issue is needed.`
+              );
+              return;
+            }
+
+            const marker = `<!-- hyprlane-hyprland-compatibility:tag=${latestTag} -->`;
+            const title = `Track Hyprland compatibility for ${latestTag}`;
+            const releaseUrl =
+              latestRelease.html_url ||
+              `https://github.com/hyprwm/Hyprland/releases/tag/${encodeURIComponent(latestTag)}`;
+            const body = [
+              marker,
+              '',
+              `## Hyprland compatibility update: \`${latestTag}\``,
+              '',
+              'Hyprland has a newer stable release than the version currently supported',
+              'by Hyprlane. This issue tracks the compatibility work; it does not claim',
+              'automatic compatibility.',
+              '',
+              `Hyprland release: ${releaseUrl}`,
+              `Current supported tag: \`${supportedTag}\``,
+              '',
+              'A build-only result is insufficient. Review the API and internal hooks,',
+              'then complete every item against the exact Hyprland release and ABI before',
+              'updating support or releasing Hyprlane.',
+              '',
+              `- [ ] Review Hyprland API and internal-hook changes from \`${supportedTag}\` to \`${latestTag}\`.`,
+              '- [ ] Update `.github/hyprland-compatibility.json` with the supported Hyprland tag, version, and ABI commit.',
+              '- [ ] Update the README compatibility statement and Hyprlane release metadata.',
+              '- [ ] Run strict GCC builds with warnings treated as errors.',
+              '- [ ] Run strict Clang builds with warnings treated as errors.',
+              '- [ ] Run ASan/UBSan checks.',
+              '- [ ] Run CTest.',
+              '- [ ] Install and reload the exact artifact built against the target Hyprland release and ABI.',
+              '- [ ] Perform live checks for focus, resize, overview, cross-workspace movement, and clipped-window input.',
+              '- [ ] Manually approve the compatibility update before tagging or releasing Hyprlane.',
+            ].join('\n');
+
+            const matchingIssues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
+                owner,
+                repo,
+                state: 'all',
+                per_page: 100,
+              }
+            );
+            const existingIssue = matchingIssues.find(
+              (issue) =>
+                !issue.pull_request &&
+                typeof issue.body === 'string' &&
+                issue.body.includes(marker)
+            );
+
+            let issue;
+            if (existingIssue?.state === 'closed') {
+              issue = await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: existingIssue.number,
+                title,
+                body,
+                state: 'open',
+              });
+              core.info(
+                `Reopened compatibility issue #${issue.data.number} for ${latestTag}.`
+              );
+            } else if (existingIssue) {
+              issue = { data: existingIssue };
+              core.info(
+                `Compatibility issue #${issue.data.number} for ${latestTag} is already open.`
+              );
+            } else {
+              issue = await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+              });
+              core.info(
+                `Created compatibility issue #${issue.data.number} for ${latestTag}.`
+              );
+            }
+
+            try {
+              await github.rest.issues.addAssignees({
+                owner,
+                repo,
+                issue_number: issue.data.number,
+                assignees: ['goggi'],
+              });
+              core.info(`Assigned compatibility issue #${issue.data.number} to goggi.`);
+            } catch (error) {
+              core.warning(
+                `Could not assign compatibility issue #${issue.data.number} to goggi: ${error.message}`
+              );
+            }

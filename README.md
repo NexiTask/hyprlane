@@ -128,6 +128,16 @@ verified against Hyprland 0.56.2 at commit
 matching headers and ABI; other Hyprland versions are unsupported until
 verified.
 
+### Automated compatibility check
+
+A daily GitHub Actions check compares the latest stable Hyprland release tag with
+`.github/hyprland-compatibility.json`. When the tag changes, it opens or reopens
+a compatibility issue with the required review checklist. This process does not
+claim automatic compatibility or update the supported version. Updating the
+compatibility record and tagging or releasing Hyprlane remains a manual gate
+after the issue's API/internal-hook review, strict GCC and Clang builds, tests,
+ASan/UBSan checks, exact-artifact reload, and live behavior checks.
+
 The plugin must be loaded by Hyprland before `general:layout` is set to
 `scroller`. Use the plugin-loading setup already used by your Hyprland
 installation. This README does not prescribe a separate loader command.
