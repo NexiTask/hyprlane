@@ -4,9 +4,10 @@ Hyprlane is a [Hyprland](https://github.com/hyprwm/Hyprland)
 plugin that creates a window layout similar to [PaperWM](https://github.com/paperwm/PaperWM).
 It started from the original MIT-licensed
 [scrolling-layout plugin](https://github.com/dawsers/hyprscroller).
-See [NOTICE](NOTICE) and [LICENSE](LICENSE).
+See [NOTICE](../NOTICE) and [LICENSE](../LICENSE).
 
-Consult the [README](README.md) for more details beyond this quick tutorial.
+Consult the [README](../README.md) for install and a starter config, and
+[reference](reference.md) for dispatchers and options.
 
 ## Rows and Columns
 
@@ -144,9 +145,8 @@ called a trail. You can have as many trailmarks as you want in each trail, and
 as many trails as you want. To navigate these trailmarks, you navigate the
 list with previous/next dispatchers.
 
-Read the section of the README for a more detailed explanation, possible key
-bindings, and how to set IPC events to show trail and trailmark information on
-your desktop bar.
+Read [reference](reference.md) for dispatcher details, example key
+bindings, and IPC events for trail and trailmark information on a bar.
 
 
 ## Touchpad Gestures
@@ -163,5 +163,4 @@ focus on a different application.
 
 ## Example Configuration
 
-The README includes a simple set of [key bindings](./README.md#quick-start-and-starter-shortcuts) to
-minimally configure *hyprlane*.
+The [README](../README.md) includes a small starter config.

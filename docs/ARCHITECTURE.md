@@ -79,7 +79,7 @@ can invalidate state between events.
 ## Configuration changes
 
 Add a typed value and accessor in `config.*`, include it in
-`ScrollerConfig::register_values`, document it in the README, and consume the
+`ScrollerConfig::register_values`, document it in [docs/reference.md](reference.md), and consume the
 accessor from domain code. Integer toggles and non-negative values should carry
 V2 constraints. Do not reintroduce legacy `getConfigValue` calls.
 

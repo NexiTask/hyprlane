@@ -90,7 +90,7 @@ jobs:
               '',
               `- [ ] Review Hyprland API and internal-hook changes from \`${supportedTag}\` to \`${latestTag}\`.`,
               '- [ ] Update `.github/hyprland-compatibility.json` with the supported Hyprland tag, version, and ABI commit.',
-              '- [ ] Update the README compatibility statement and Hyprlane release metadata.',
+              '- [ ] Update the docs/install.md compatibility statement and Hyprlane release metadata.',
               '- [ ] Run strict GCC builds with warnings treated as errors.',
               '- [ ] Run strict Clang builds with warnings treated as errors.',
               '- [ ] Run ASan/UBSan checks.',
