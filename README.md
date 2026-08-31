@@ -1,6 +1,8 @@
 # Hyprlane
 
-![Hyprlane demo](./assets/demo.mp4)
+[![Hyprlane demo](./assets/demo.webp)](./assets/demo.mp4)
+
+Click the animated preview to open the full-quality MP4.
 
 Hyprlane is a Hyprland tiled-layout plugin inspired by PaperWM. It arranges
 managed windows in horizontal columns, stacks windows vertically inside each
