@@ -55,6 +55,20 @@ bool suppressFocusLayout = false;
 std::chrono::steady_clock::time_point lastNoCenterTime;
 static std::chrono::steady_clock::time_point lastKeyboardFocusTime;
 
+// An explicit window move is a keyboard/dispatcher action. Mark it as such so
+// the focus change it triggers (force_focus_to_window warps the cursor and
+// simulates mouse movement) is not mistaken for mouse-driven focus, which
+// would set suppressFocusLayout and skip the relayout. Without this, rapid
+// moves reorder the column list silently and the layout "teleports" later.
+static void mark_explicit_move_action()
+{
+    {
+        std::lock_guard<std::mutex> lock(mouseFocusMutex);
+        lastKeyboardFocusTime = std::chrono::steady_clock::now();
+    }
+    suppressFocusLayout = false;
+}
+
 class Marks {
 public:
     Marks() = default;
@@ -827,6 +841,7 @@ void ScrollerLayout::moveWindowTo(PHLWINDOW window, const std::string &direction
 {
     if (!window || direction.empty())
         return;
+    mark_explicit_move_action();
     auto s = getRowForWindow(window);
     if (s == nullptr) {
         return;
@@ -1359,6 +1374,7 @@ void ScrollerLayout::move_focus_nocenter(WORKSPACEID workspace, Direction direct
 void ScrollerLayout::move_window(WORKSPACEID workspace, Direction direction, bool nomode) {
     // Reset nocenter timestamp so movewindow can apply focus layout
     lastNoCenterTime = std::chrono::steady_clock::time_point{};
+    mark_explicit_move_action();
 
     auto s = getRowForWorkspace(workspace);
     if (s == nullptr) {
