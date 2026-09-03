@@ -451,11 +451,13 @@ void Column::store_full_sizes_for_clipping()
         if (window->get_clip_when_inactive()) {
             PHLWINDOW hyprwin = window->get_window();
             if (hyprwin) {
-                auto reserved = hyprwin->getFullWindowReservedArea();
-                double stored_width = window_size(hyprwin).x + reserved.topLeft.x + reserved.bottomRight.x;
-                double stored_height = window_size(hyprwin).y + reserved.topLeft.y + reserved.bottomRight.y;
-                window->store_full_size(stored_width, stored_height);
-                Log::logger->log(Log::DEBUG, "[CLIP] Stored full size for window: width={:.0f}, height={:.0f}", stored_width, stored_height);
+                // Store the client size only. update_window() compares full_width against
+                // a target width that excludes the reserved area, and feeds both values
+                // back to set_window_size() as a client size, so adding the reserved area
+                // here would make the window grow by the border size on every relayout.
+                const Vector2D stored = window_size(hyprwin);
+                window->store_full_size(stored.x, stored.y);
+                Log::logger->log(Log::DEBUG, "[CLIP] Stored full size for window: width={:.0f}, height={:.0f}", stored.x, stored.y);
             }
         }
     }
@@ -708,7 +710,7 @@ void Column::adjust_windows(ListNode<Window *> *win, const Vector2D &gap_x, doub
             hyprwin->setHidden(false);
         }
 
-        w->data()->update_window(geom.w, gap_x, gap0, gap1, animate);
+        w->data()->update_window(geom.w, gap_x, gap0, gap1, animate, row->get_active_column() == this && w == active);
     }
 }
 
@@ -867,7 +869,7 @@ void Column::recalculate_grid_col_geometry(uint32_t grid_row, const Vector2D &ga
             hyprwin->setHidden(false);
             w->data()->set_geom_h(max.h);
             w->data()->move_to_top(geom.x, max, gap_x, 0.0);
-            w->data()->update_window(geom.w, gap_x, 0.0, 0.0, true);
+            w->data()->update_window(geom.w, gap_x, 0.0, 0.0, true, row->get_active_column() == this);
         } else {
             // Hide windows not in current grid row - move off-screen AND set hidden
             Log::logger->log(Log::DEBUG, "[GRID] Hiding window at grid_row={}", w->data()->get_grid_row());

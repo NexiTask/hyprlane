@@ -140,7 +140,7 @@ public:
         set_window_position(w, position, true);
     }
 
-    void update_window(double w, const Vector2D &gap_x, double gap0, double gap1, bool animate);
+    void update_window(double w, const Vector2D &gap_x, double gap0, double gap1, bool animate, bool is_active);
     bool can_resize_width(double geomw, double maxw, const Vector2D &gap_x, double gap, double deltax) {
         PHLWINDOW w = window.lock();
         if (!w) return false;

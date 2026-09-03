@@ -76,7 +76,7 @@ void Window::update_height(StandardSize h, double max)
     }
 }
 
-void Window::update_window(double w, const Vector2D &gap_x, double gap0, double gap1, bool animate)
+void Window::update_window(double w, const Vector2D &gap_x, double gap0, double gap1, bool animate, bool is_active)
 {
     PHLWINDOW win = window.lock();
     if (!win) return;
@@ -92,18 +92,20 @@ void Window::update_window(double w, const Vector2D &gap_x, double gap0, double 
     // 2. We have a stored full size
     // 3. Target width is significantly smaller than full width (not just rounding error)
     // 4. Focus layout is NOT enabled (clipping conflicts with focus_layout positioning)
+    // 5. Window is not the active one (the active window must always be at layout size)
     const bool focus_layout_active = g_scrollerConfig.focus_layout_enable();
 
     const double CLIP_THRESHOLD = 50.0; // Only clip if difference > 50px
     bool should_clip = clip_when_inactive &&
+                      !is_active &&
                       full_width > 0 &&
                       (full_width - target_width) > CLIP_THRESHOLD &&
                       !focus_layout_active;  // Disable clipping when focus_layout is managing sizes
 
     // DEBUG: Log clipping decisions
     if (clip_when_inactive) {
-        Log::logger->log(Log::DEBUG, "[CLIP] Window: clip_flag={}, full_width={:.0f}, target_width={:.0f}, diff={:.0f}, should_clip={}",
-                  clip_when_inactive, full_width, target_width, (full_width - target_width), should_clip);
+        Log::logger->log(Log::DEBUG, "[CLIP] Window: clip_flag={}, is_active={}, full_width={:.0f}, target_width={:.0f}, diff={:.0f}, should_clip={}",
+                  clip_when_inactive, is_active, full_width, target_width, (full_width - target_width), should_clip);
     }
 
     if (should_clip) {
